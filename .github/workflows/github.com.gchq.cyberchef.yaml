@@ -57,7 +57,7 @@ jobs:
           context: github.com/gchq/CyberChef
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/cyberchef:${{ steps.getversion.outputs.version }}
-
+          platforms: linux/amd64,linux/arm64
 
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
