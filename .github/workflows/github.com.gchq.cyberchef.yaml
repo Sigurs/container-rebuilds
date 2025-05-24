@@ -1,0 +1,25 @@
+name: Check & build github.com/gchq/CyberChef
+on:
+  schedule:
+    - cron:  '* */6 * * *'
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+      - name: Fetch release version
+        run: |
+          curl -sL https://api.github.com/repos/gchq/CyberChef/releases/latest | \
+          jq -r ".tag_name" > github.com/gchq/CyberChef/latest.txt
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'Automation'
+          git config --global user.email 'sigurs@users.noreply.github.com'
+          git commit -am "github.com/gchq/CyberChef new release version"
+          git push
