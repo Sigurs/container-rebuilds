@@ -2,6 +2,7 @@ name: Check & build github.com/gchq/CyberChef
 on:
   schedule:
     - cron:  '* */6 * * *'
+  workflow_dispatch:
 jobs:
   get-version:
     runs-on: ubuntu-latest
