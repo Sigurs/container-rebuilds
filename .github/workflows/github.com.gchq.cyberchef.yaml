@@ -1,7 +1,7 @@
 name: Check & build github.com/gchq/CyberChef
 on:
   schedule:
-    - cron:  '* */6 * * *'
+    - cron:  '* */12 * * *'
   workflow_dispatch:
 
 env:
