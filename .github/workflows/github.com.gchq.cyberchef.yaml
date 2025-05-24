@@ -4,7 +4,7 @@ on:
     - cron:  '* */6 * * *'
   workflow_dispatch:
 jobs:
-  get-version:
+  check-and-build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -25,6 +25,14 @@ jobs:
         run: echo "::set-output name=version::$(cat github.com/gchq/CyberChef/latest.txt)"
 
       # Build if needed
+      - name: Log in to the Container registry
+        if: steps.git-check.outputs.modified == 'true'
+        uses: docker/login-action@@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up QEMU
         if: steps.git-check.outputs.modified == 'true'
         uses: docker/setup-qemu-action@v3
