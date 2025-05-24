@@ -12,3 +12,7 @@ Issues:
 - Container ran as root
     - Fixed by running in a unprivileged nginx container.
 
+### https://github.com/open-webui/open-webui
+Issues:
+- Container ran as root
+    - Fixed by building as non-root.
