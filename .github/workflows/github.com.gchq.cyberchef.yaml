@@ -51,7 +51,7 @@ jobs:
         with:
           context: github.com/gchq/CyberChef
           push: true
-          tags: sigurs/cyberchef:${{ steps.getversion.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/cyberchef:${{ steps.getversion.outputs.version }}
 
 
       - name: Commit latest release version
