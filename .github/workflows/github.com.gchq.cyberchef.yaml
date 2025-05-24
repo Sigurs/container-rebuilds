@@ -23,13 +23,6 @@ jobs:
       - name: Read latest.txt file
         id: getversion
         run: echo "::set-output name=version::$(cat github.com/gchq/CyberChef/latest.txt)"
-      - name: Commit latest release version
-        if: steps.git-check.outputs.modified == 'true'
-        run: |
-          git config --global user.name 'GitHub Workflow'
-          git config --global user.email 'sigurs@users.noreply.github.com'
-          git commit -am "github.com/gchq/CyberChef new release version"
-          git push
 
       # Build if needed
       - name: Set up QEMU
@@ -46,4 +39,13 @@ jobs:
         with:
           context: github.com/gchq/CyberChef
           push: true
-          tags: sigurs/CyberChef:${{ steps.getversion.outputs.version }}
+          tags: sigurs/cyberchef:${{ steps.getversion.outputs.version }}
+
+
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'GitHub Workflow'
+          git config --global user.email 'sigurs@users.noreply.github.com'
+          git commit -am "github.com/gchq/CyberChef new release version"
+          git push
