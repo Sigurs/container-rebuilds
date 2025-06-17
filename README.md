@@ -11,6 +11,9 @@ The usual reason for containers to need rebuilding are:
 Issues:
 - Container ran as root
     - Fixed by running in a unprivileged nginx container.
+### github.com/paperless-ngx/paperless-ngx
+Issues:
+- Needs Finnish OCR libraries
 
 ### https://github.com/open-webui/open-webui
 Issues:
