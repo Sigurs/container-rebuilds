@@ -1,0 +1,67 @@
+name: Check & build github.com/gchq/CyberChef
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch release version
+        run: |
+          curl -sL https://api.github.com/repos/gchq/CyberChef/releases/latest | \
+          jq -r ".tag_name" > github.com/paperless-ngx/paperless-ngx/latest.txt
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+      - name: Read latest.txt file
+        id: getversion
+        run: echo "::set-output name=version::$(cat github.com/paperless-ngx/paperless-ngx/latest.txt)"
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'GitHub Workflow'
+          git config --global user.email 'sigurs@users.noreply.github.com'
+          git commit -am "github.com/paperless-ngx/paperless-ngx new release version"
+          git push
+
+      # Build if needed
+      - name: Log in to the Container registry
+        if: steps.git-check.outputs.modified == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        if: steps.git-check.outputs.modified == 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: steps.git-check.outputs.modified == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Downcase REPO for image push
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          echo "REPO=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
+
+      - name: Build and push
+        if: steps.git-check.outputs.modified == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: github.com/paperless-ngx/paperless-ngx
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO }}/paperless-ngx:${{ steps.getversion.outputs.version }}
+          platforms: linux/amd64
+          build-args: 
+            - IMAGE_TAG=${{ steps.getversion.outputs.version }}
