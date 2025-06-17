@@ -24,7 +24,7 @@ jobs:
         run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
       - name: Read latest.txt file
         id: getversion
-        run: echo "::set-output name=version::$(cat github.com/paperless-ngx/paperless-ngx/latest.txt)"
+        run: echo "::set-output name=version::$(cat github.com/paperless-ngx/paperless-ngx/latest.txt | sed -e "s/^v//")"
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
         run: |
