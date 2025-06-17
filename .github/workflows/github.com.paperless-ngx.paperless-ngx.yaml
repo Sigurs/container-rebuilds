@@ -1,4 +1,4 @@
-name: Check & build github.com/gchq/CyberChef
+name: Check & build github.com/paperless-ngx/paperless-ngx
 on:
   workflow_dispatch:
 
@@ -17,7 +17,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch release version
         run: |
-          curl -sL https://api.github.com/repos/gchq/CyberChef/releases/latest | \
+          curl -sL https://api.github.com/repos/paperless-ngx/paperless-ngx/releases/latest | \
           jq -r ".tag_name" > github.com/paperless-ngx/paperless-ngx/latest.txt
       - name: Check for modified files
         id: git-check
