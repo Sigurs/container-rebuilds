@@ -68,15 +68,9 @@ jobs:
 
       - name: Clean up old container versions
         if: steps.git-check.outputs.modified == 'true'
-        run: |
-          # Get all versions sorted by creation date (newest first)
-          VERSIONS=$(gh api "user/packages/container/cyberchef/versions" \
-            --jq 'sort_by(.created_at) | reverse | .[3:] | .[].id')
-
-          # Delete versions beyond the latest 3
-          for VERSION_ID in $VERSIONS; do
-            echo "Deleting version ID: $VERSION_ID"
-            gh api "user/packages/container/cyberchef/versions/$VERSION_ID" -X DELETE
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'cyberchef'
+          package-type: 'container'
+          min-versions-to-keep: 3
+          delete-only-untagged-versions: false
