@@ -67,7 +67,6 @@ jobs:
             IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
       - name: Clean up old container versions
-        if: steps.git-check.outputs.modified == 'true'
         uses: actions/delete-package-versions@v5
         with:
           package-name: '${{ env.REPO }}/paperless-ngx'

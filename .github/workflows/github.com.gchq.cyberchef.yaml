@@ -67,7 +67,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Clean up old container versions
-        if: steps.git-check.outputs.modified == 'true'
         uses: actions/delete-package-versions@v5
         with:
           package-name: '${{ env.REPO }}/cyberchef'
