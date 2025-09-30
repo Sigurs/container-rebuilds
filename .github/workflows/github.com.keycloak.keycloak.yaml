@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch release version
         run: |
-          curl -sL https://api.github.com/keycloak/keycloak/releases/latest | \
+          curl -sL https://api.github.com/repos/keycloak/keycloak/releases/latest | \
           jq -r ".tag_name" > github.com/keycloak/keycloak/latest.txt
       - name: Check for modified files
         id: git-check
