@@ -65,6 +65,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/cyberchef:${{ steps.getversion.outputs.version }}
           platforms: linux/amd64,linux/arm64
+          target: final
 
       - name: Clean up untagged container versions
         uses: actions/delete-package-versions@v5

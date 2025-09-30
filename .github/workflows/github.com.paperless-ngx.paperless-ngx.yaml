@@ -63,6 +63,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/paperless-ngx:${{ steps.getversion.outputs.version }}
           platforms: linux/amd64
+          target: final
           build-args: |
             IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
