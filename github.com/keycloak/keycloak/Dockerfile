@@ -1,7 +1,7 @@
 ARG IMAGE_TAG=latest
 
 # Stage 1: Build Keycloak with optimizations
-FROM quay.io/keycloak/keycloak:26.4.0 AS builder
+FROM quay.io/keycloak/keycloak:${IMAGE_TAG} AS builder
 WORKDIR /opt/keycloak
 # Add custom providers or themes here
 # ...
@@ -9,7 +9,7 @@ WORKDIR /opt/keycloak
 RUN /opt/keycloak/bin/kc.sh build --db=postgres --health-enabled=true --metrics-enabled=true
 
 # Stage 2: Create the final optimized image
-FROM quay.io/keycloak/keycloak:26.4.0 AS final
+FROM quay.io/keycloak/keycloak:${IMAGE_TAG} AS final
 WORKDIR /opt/keycloak
 # Copy the augmented runtime from the builder stage
 COPY --from=builder /opt/keycloak/lib/quarkus/ /opt/keycloak/lib/quarkus/
