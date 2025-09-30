@@ -65,6 +65,9 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/keycloak:${{ steps.getversion.outputs.version }}
           platforms: linux/amd64
+          target: final
+          build-args: |
+            IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
       - name: Clean up old container versions
         if: steps.git-check.outputs.modified == 'true'
