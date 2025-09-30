@@ -7,6 +7,10 @@ The usual reason for containers to need rebuilding are:
 - A binary inside the container has been given rights with setcap that aren't actually needed.
 
 ## Containers
+### github.com/keycloak/keycloak
+Needs optimized build to run with readOnlyFilesystem.  
+[Link](https://github.com/keycloak/keycloak/issues/11286#issuecomment-3328420408)
+
 ### github.com/chq/CyberChef
 Issues:
 - Container ran as root
@@ -14,8 +18,3 @@ Issues:
 ### github.com/paperless-ngx/paperless-ngx
 Issues:
 - Needs Finnish OCR libraries
-
-### https://github.com/open-webui/open-webui
-Issues:
-- Container ran as root
-    - Fixed by building as non-root.
