@@ -1,10 +1,11 @@
 # container-rebuilds
 ## Use
-Some containers are not build in a way that I want them to and this repo's idea is to fix it. <br>
+Some containers are not build in a way that I want them to and this repo's idea is to fix it.  
+Pipelines need optimization.
 
 The usual reason for containers to need rebuilding are:
 - They are ran as root for no good reason
-- A binary inside the container has been given rights with setcap that aren't actually needed.
+- A binary inside the container has been given rights with setcap that aren't actually needed.  
 
 ## Containers
 ### github.com/keycloak/keycloak

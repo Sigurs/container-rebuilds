@@ -72,7 +72,7 @@ jobs:
       - name: Clean up old container versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: '${{ env.REPO }}/keycloak'
+          package-name: 'container-rebuilds/keycloak'
           package-type: 'container'
-          min-versions-to-keep: 3
+          min-versions-to-keep: 2
           delete-only-untagged-versions: false
