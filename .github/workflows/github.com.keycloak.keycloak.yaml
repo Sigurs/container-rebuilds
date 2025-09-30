@@ -69,10 +69,18 @@ jobs:
           build-args: |
             IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
-      - name: Clean up old container versions
+      - name: Clean up untagged container versions
         uses: actions/delete-package-versions@v5
         with:
           package-name: 'container-rebuilds/keycloak'
           package-type: 'container'
-          min-versions-to-keep: 2
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true
+
+      - name: Clean up old tagged container versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'container-rebuilds/keycloak'
+          package-type: 'container'
+          min-versions-to-keep: 3
           delete-only-untagged-versions: false
