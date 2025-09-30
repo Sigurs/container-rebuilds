@@ -1,5 +1,7 @@
-name: Check & build github.com/paperless-ngx/paperless-ngx
+name: Check & build github.com/keycloak/keycloak
 on:
+  schedule:
+    - cron:  '* */12 * * *'
   workflow_dispatch:
 
 env:
@@ -17,20 +19,20 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch release version
         run: |
-          curl -sL https://api.github.com/repos/paperless-ngx/paperless-ngx/releases/latest | \
-          jq -r ".tag_name" > github.com/paperless-ngx/paperless-ngx/latest.txt
+          curl -sL https://api.github.com/keycloak/keycloak/releases/latest | \
+          jq -r ".tag_name" > github.com/keycloak/keycloak/latest.txt
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
       - name: Read latest.txt file
         id: getversion
-        run: echo "::set-output name=version::$(cat github.com/paperless-ngx/paperless-ngx/latest.txt | sed -e "s/^v//")"
+        run: echo "::set-output name=version::$(cat github.com/keycloak/keycloak/latest.txt)"
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
         run: |
           git config --global user.name 'GitHub Workflow'
           git config --global user.email 'sigurs@users.noreply.github.com'
-          git commit -am "github.com/paperless-ngx/paperless-ngx new release version"
+          git commit -am "github.com/keycloak/keycloak new release version"
           git push
 
       # Build if needed
@@ -59,18 +61,16 @@ jobs:
         if: steps.git-check.outputs.modified == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: github.com/paperless-ngx/paperless-ngx
+          context: github.com/keycloak/keycloak
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO }}/paperless-ngx:${{ steps.getversion.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO }}/keycloak:${{ steps.getversion.outputs.version }}
           platforms: linux/amd64
-          build-args: |
-            IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
       - name: Clean up old container versions
         if: steps.git-check.outputs.modified == 'true'
         uses: actions/delete-package-versions@v5
         with:
-          package-name: '${{ env.REPO }}/paperless-ngx'
+          package-name: '${{ env.REPO }}/keycloak'
           package-type: 'container'
           min-versions-to-keep: 3
           delete-only-untagged-versions: false

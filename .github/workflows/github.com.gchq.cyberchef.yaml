@@ -70,7 +70,7 @@ jobs:
         if: steps.git-check.outputs.modified == 'true'
         uses: actions/delete-package-versions@v5
         with:
-          package-name: 'cyberchef'
+          package-name: '${{ env.REPO }}/cyberchef'
           package-type: 'container'
           min-versions-to-keep: 3
           delete-only-untagged-versions: false
