@@ -4,8 +4,9 @@ Some containers are not build in a way that I want them to and this repo's idea 
 Pipelines need optimization.
 
 The usual reason for containers to need rebuilding are:
-- They are ran as root for no good reason
-- A binary inside the container has been given rights with setcap that aren't actually needed.  
+- They are ran as root for no good reason.
+- A binary inside the container has been given rights with setcap that aren't actually needed.
+- Missing packages.
 
 ## Containers
 ### github.com/keycloak/keycloak
@@ -14,12 +15,12 @@ Needs optimized build to run with readOnlyFilesystem.
 
 ### github.com/chq/CyberChef
 Issues:
-- Container ran as root
+- Container ran as root.
     - Fixed by running in a unprivileged nginx container.
 ### github.com/paperless-ngx/paperless-ngx
 Issues:
-- Needs Finnish OCR libraries
+- Needs Finnish OCR libraries.
 ### github.com/mlflow/mlflow
 Issues:
-- Needs Postgres drivers for the database backend store
+- Needs Postgres drivers for the database backend store.
     - Fixed by installing `psycopg2-binary`.
