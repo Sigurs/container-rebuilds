@@ -19,3 +19,7 @@ Issues:
 ### github.com/paperless-ngx/paperless-ngx
 Issues:
 - Needs Finnish OCR libraries
+### github.com/mlflow/mlflow
+Issues:
+- Needs Postgres drivers for the database backend store
+    - Fixed by installing `psycopg2-binary`.
