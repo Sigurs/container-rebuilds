@@ -24,3 +24,7 @@ Issues:
 Issues:
 - Needs Postgres drivers for the database backend store.
     - Fixed by installing `psycopg2-binary`.
+### github.com/NOALBS/nginx-obs-automatic-low-bitrate-switching
+Issues:
+- No official minimal container image.
+    - Fixed by packaging the upstream static musl release binary on Alpine, running as non-root. Mount your `config.json` at `/config`.
