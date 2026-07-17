@@ -32,4 +32,4 @@ WORKDIR /home/obs
 EXPOSE 5900
 
 # Launch OBS inside a virtual framebuffer, exposed over VNC on :5900
-ENTRYPOINT ["xvfb-run", "-a", "-s", "-screen 0 1920x1080x24", "/usr/local/bin/start-obs.sh"]
+ENTRYPOINT ["/usr/local/bin/start-obs.sh"]

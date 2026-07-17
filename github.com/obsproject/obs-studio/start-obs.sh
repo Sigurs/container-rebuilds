@@ -1,9 +1,26 @@
 #!/bin/sh
-# Runs under xvfb-run, so DISPLAY + XAUTHORITY are already set for us.
-# Serve that framebuffer over VNC, then hand off to OBS.
-# ponytail: -nopw, fine for a LAN/dev container. Set VNC_PASSWORD to require one.
+# xvfb-run's SIGUSR1 readiness handshake hangs in this container (it waits for a
+# signal Xvfb never sends, so the command never launches). Manage Xvfb directly
+# and wait for its socket ourselves instead.
 set -e
 
+DISPLAY_NUM=99
+export DISPLAY=":${DISPLAY_NUM}"
+SCREEN="${OBS_SCREEN:-1920x1080x24}"
+
+mkdir -p /tmp/.X11-unix
+
+Xvfb "$DISPLAY" -screen 0 "$SCREEN" -nolisten tcp &
+XVFB_PID=$!
+
+# Wait for the X socket before starting anything that needs the display.
+for _ in $(seq 1 50); do
+    [ -S "/tmp/.X11-unix/X${DISPLAY_NUM}" ] && break
+    kill -0 "$XVFB_PID" 2>/dev/null || { echo "Xvfb exited during startup" >&2; exit 1; }
+    sleep 0.1
+done
+
+# ponytail: -nopw, fine for a LAN/dev container. Set VNC_PASSWORD to require one.
 if [ -n "$VNC_PASSWORD" ]; then
     AUTH="-passwd $VNC_PASSWORD"
 else
