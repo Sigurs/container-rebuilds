@@ -1,23 +1,24 @@
 #!/bin/sh
-# Replace PLACEHOLDER_<NAME> tokens in the given files/dirs with env var <NAME>.
-# Exits non-zero if a referenced env var is unset or empty.
+# Replace occurrences of each PLACEHOLDER_* env var name (e.g. PLACEHOLDER_DB_PASSWORD)
+# in the given files/dirs with that variable's value.
+# Exits non-zero if a PLACEHOLDER_ var is set but empty.
 set -eu
 
 for target in "$@"; do
-    if [ ! -e "$target" ]; then
-        echo "substitute-env: $target does not exist, skipping" >&2
-        continue
+    [ -e "$target" ] || echo "substitute-env: $target does not exist, skipping" >&2
+done
+
+# Longest names first (sort -r) so PLACEHOLDER_DB never clobbers PLACEHOLDER_DB_USER.
+env | grep -oE '^PLACEHOLDER_[A-Za-z0-9_]+' | sort -ur | while read -r token; do
+    eval "val=\${$token-}"
+    if [ -z "$val" ]; then
+        echo "substitute-env: $token is set but empty" >&2
+        exit 1
     fi
-    # Longest tokens first (sort -r) so PLACEHOLDER_DB never clobbers PLACEHOLDER_DB_USER.
-    grep -rhoE 'PLACEHOLDER_[A-Za-z0-9_]+' "$target" | sort -ur | while read -r token; do
-        name="${token#PLACEHOLDER_}"
-        eval "val=\${$name-}"
-        if [ -z "$val" ]; then
-            echo "substitute-env: environment variable $name is not set or empty (needed for $token)" >&2
-            exit 1
-        fi
-        # Escape sed replacement special chars: \ & /
-        escaped=$(printf '%s' "$val" | sed 's/[&/\\]/\\&/g')
+    # Escape sed replacement special chars: \ & /
+    escaped=$(printf '%s' "$val" | sed 's/[&/\\]/\\&/g')
+    for target in "$@"; do
+        [ -e "$target" ] || continue
         grep -rlF "$token" "$target" | while read -r f; do
             tmp=$(mktemp)
             sed "s/$token/$escaped/g" "$f" > "$tmp"
