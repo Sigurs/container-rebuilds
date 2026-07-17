@@ -10,6 +10,6 @@ else
     AUTH="-nopw"
 fi
 
-x11vnc -display "$DISPLAY" -forever -shared -rfbport 5900 -quiet $AUTH &
+x11vnc -display "$DISPLAY" -forever -shared -rfbport 5900 -listen 0.0.0.0 $AUTH &
 
 exec obs
