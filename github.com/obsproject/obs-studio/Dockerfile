@@ -23,7 +23,8 @@ COPY start-obs.sh /usr/local/bin/start-obs.sh
 RUN chmod +x /usr/local/bin/start-obs.sh
 
 # Non-root: OBS writes its config to ~/.config/obs-studio, so give it a home
-RUN useradd --create-home --uid 1000 --shell /usr/sbin/nologin obs
+RUN userdel --remove $(id -un 1000) 2>/dev/null; \
+    useradd --create-home --uid 1000 --shell /usr/sbin/nologin obs
 USER obs
 WORKDIR /home/obs
 
