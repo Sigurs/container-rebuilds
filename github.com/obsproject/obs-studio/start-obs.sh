@@ -7,6 +7,12 @@ set -e
 # Fill in PLACEHOLDER_* from env vars; aborts startup if one is unset.
 /usr/local/bin/substitute-env.sh /home/obs/.config/obs-studio
 
+# A killed container leaves OBS's crash sentinel behind; next boot then shows
+# the Safe Mode dialog and hangs headless. Clear it before launch.
+# (safe_mode = OBS <= 31, .sentinel/run_* = OBS 32+; --disable-shutdown-check
+# was removed in 32 so clearing these is the only way.)
+rm -rf /home/obs/.config/obs-studio/safe_mode /home/obs/.config/obs-studio/.sentinel
+
 DISPLAY_NUM=99
 export DISPLAY=":${DISPLAY_NUM}"
 SCREEN="${OBS_SCREEN:-1920x1080x24}"
