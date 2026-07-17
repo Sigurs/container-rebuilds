@@ -2,7 +2,8 @@ FROM ubuntu:26.04 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# obs-studio from the upstream PPA; xvfb so it can launch headless
+# obs-studio from the upstream PPA; xvfb + x11vnc so it can run headless and be
+# viewed over VNC
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -11,16 +12,23 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         obs-studio \
-        xvfb && \
+        xvfb \
+        x11vnc && \
     apt-get purge -y software-properties-common && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+COPY start-obs.sh /usr/local/bin/start-obs.sh
+RUN chmod +x /usr/local/bin/start-obs.sh
+
 # Non-root: OBS writes its config to ~/.config/obs-studio, so give it a home
-RUN useradd --create-home --shell /usr/sbin/nologin obs
+RUN useradd --create-home --uid 1000 --shell /usr/sbin/nologin obs
 USER obs
 WORKDIR /home/obs
 
-# Launch OBS inside a virtual framebuffer
-ENTRYPOINT ["xvfb-run", "-a", "obs"]
+# VNC server for the virtual framebuffer
+EXPOSE 5900
+
+# Launch OBS inside a virtual framebuffer, exposed over VNC on :5900
+ENTRYPOINT ["xvfb-run", "-a", "-s", "-screen 0 1920x1080x24", "/usr/local/bin/start-obs.sh"]
