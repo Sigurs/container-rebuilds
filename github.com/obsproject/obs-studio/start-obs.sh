@@ -42,4 +42,12 @@ fi
 
 x11vnc -display "$DISPLAY" -forever -shared -rfbport 5900 -listen 0.0.0.0 $AUTH &
 
-exec obs --disable-shutdown-check
+# FFmpeg logs straight to stderr with no level control; the media source
+# retrying a not-yet-published RTSP stream spams DESCRIBE 404s. Filter them
+# out via a fifo so exec is preserved (obs keeps PID 1 signal handling).
+FIFO=/tmp/obs-stderr
+rm -f "$FIFO"
+mkfifo "$FIFO"
+grep -v --line-buffered 'method DESCRIBE failed' < "$FIFO" >&2 &
+
+exec obs --disable-shutdown-check 2> "$FIFO"

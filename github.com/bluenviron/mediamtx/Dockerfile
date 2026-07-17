@@ -12,11 +12,13 @@ RUN curl -fsSL "https://github.com/bluenviron/mediamtx/releases/download/${VERSI
 FROM alpine:3 AS final
 # ca-certificates: MediaMTX talks HTTPS for HLS, WebRTC ICE and remote auth.
 # ffmpeg: for runOnDemand/runOnReady transcoding and recording hooks.
-RUN apk add --no-cache ca-certificates ffmpeg && adduser -D -H -u 1000 mediamtx
+# grep: GNU grep for --line-buffered log filtering (busybox grep buffers).
+RUN apk add --no-cache ca-certificates ffmpeg grep && adduser -D -H -u 1000 mediamtx
 COPY --from=build /mediamtx/mediamtx /usr/local/bin/mediamtx
 # Default config; override by mounting your own at /mediamtx.yml.
 # chown so the runtime user can rewrite PLACEHOLDER_* in place.
 COPY --from=build --chown=mediamtx /mediamtx/mediamtx.yml /mediamtx.yml
 COPY --chmod=755 scripts/substitute-env.sh /usr/local/bin/substitute-env.sh
+COPY --chmod=755 github.com/bluenviron/mediamtx/start-mediamtx.sh /usr/local/bin/start-mediamtx.sh
 USER mediamtx
-ENTRYPOINT ["/bin/sh", "-c", "substitute-env.sh /mediamtx.yml && exec mediamtx /mediamtx.yml"]
+ENTRYPOINT ["/usr/local/bin/start-mediamtx.sh"]
