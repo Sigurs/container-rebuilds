@@ -11,7 +11,8 @@ RUN curl -fsSL "https://github.com/bluenviron/mediamtx/releases/download/${VERSI
 
 FROM alpine:3 AS final
 # ca-certificates: MediaMTX talks HTTPS for HLS, WebRTC ICE and remote auth.
-RUN apk add --no-cache ca-certificates && adduser -D -H -u 1000 mediamtx
+# ffmpeg: for runOnDemand/runOnReady transcoding and recording hooks.
+RUN apk add --no-cache ca-certificates ffmpeg && adduser -D -H -u 1000 mediamtx
 COPY --from=build /mediamtx/mediamtx /usr/local/bin/mediamtx
 # Default config; override by mounting your own at /mediamtx.yml.
 COPY --from=build /mediamtx/mediamtx.yml /mediamtx.yml
