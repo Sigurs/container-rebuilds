@@ -40,7 +40,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          context: github.com/obsproject/obs-studio
+          context: .
+          file: github.com/obsproject/obs-studio/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/obs-studio:${{ inputs.version || 'latest' }}
           platforms: linux/amd64

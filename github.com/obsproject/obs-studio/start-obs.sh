@@ -4,6 +4,9 @@
 # and wait for its socket ourselves instead.
 set -e
 
+# Fill in PLACEHOLDER_* placeholders from env vars; aborts startup if one is unset.
+/usr/local/bin/substitute-env.sh /home/obs/.config/obs-studio
+
 DISPLAY_NUM=99
 export DISPLAY=":${DISPLAY_NUM}"
 SCREEN="${OBS_SCREEN:-1920x1080x24}"
