@@ -11,7 +11,7 @@ RUN curl -fsSL "https://github.com/NOALBS/nginx-obs-automatic-low-bitrate-switch
 
 FROM alpine:3 AS final
 # ca-certificates: NOALBS talks HTTPS to Twitch/Kick and stats servers.
-RUN apk add --no-cache ca-certificates && adduser -D -H noalbs
+RUN apk add --no-cache ca-certificates && adduser -D -H -u 1000 noalbs
 COPY --from=build /noalbs/noalbs /usr/local/bin/noalbs
 # NOALBS reads config.json from the working dir; mount yours at /config.
 WORKDIR /config
