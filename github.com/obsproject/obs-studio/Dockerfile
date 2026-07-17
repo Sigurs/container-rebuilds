@@ -12,6 +12,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         obs-studio \
+        qt6-svg-plugins \
         xvfb \
         x11vnc && \
     apt-get purge -y software-properties-common && \
