@@ -4,7 +4,7 @@
 # and wait for its socket ourselves instead.
 set -e
 
-# Fill in PLACEHOLDER_* placeholders from env vars; aborts startup if one is unset.
+# Fill in PLACEHOLDER_* from env vars; aborts startup if one is unset.
 /usr/local/bin/substitute-env.sh /home/obs/.config/obs-studio
 
 DISPLAY_NUM=99
@@ -12,6 +12,10 @@ export DISPLAY=":${DISPLAY_NUM}"
 SCREEN="${OBS_SCREEN:-1920x1080x24}"
 
 mkdir -p /tmp/.X11-unix
+
+# A hard stop leaves the lock/socket behind; if /tmp persists, Xvfb refuses to
+# reuse the display. Clear our own stale files before (re)starting.
+rm -f "/tmp/.X${DISPLAY_NUM}-lock" "/tmp/.X11-unix/X${DISPLAY_NUM}"
 
 Xvfb "$DISPLAY" -screen 0 "$SCREEN" -nolisten tcp &
 XVFB_PID=$!
@@ -32,4 +36,4 @@ fi
 
 x11vnc -display "$DISPLAY" -forever -shared -rfbport 5900 -listen 0.0.0.0 $AUTH &
 
-exec obs
+exec obs --disable-shutdown-check
