@@ -27,3 +27,16 @@ env | grep -oE '^PLACEHOLDER_[A-Za-z0-9_]+' | sort -ur | while read -r token; do
         done
     done
 done
+
+# Fail if any placeholder survived (no matching env var was set).
+leftover=0
+for target in "$@"; do
+    [ -e "$target" ] || continue
+    if grep -rnoE 'PLACEHOLDER_[A-Za-z0-9_]+' "$target" >&2; then
+        leftover=1
+    fi
+done
+if [ "$leftover" -ne 0 ]; then
+    echo "substitute-env: unreplaced placeholders remain (listed above)" >&2
+    exit 1
+fi
