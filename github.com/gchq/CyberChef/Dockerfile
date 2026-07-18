@@ -1,5 +1,7 @@
-FROM ghcr.io/gchq/cyberchef:latest AS source
+ARG IMAGE_TAG=latest
 
-FROM nginxinc/nginx-unprivileged AS final
+FROM ghcr.io/gchq/cyberchef:${IMAGE_TAG} AS source
+
+FROM nginxinc/nginx-unprivileged:1 AS final
 
 COPY --from=source /usr/share/nginx/html/ /usr/share/nginx/html/

@@ -1,5 +1,9 @@
 name: Check & build github.com/paperless-ngx/paperless-ngx
 on:
+  schedule:
+    - cron: '0 */12 * * *'
+    # Weekly forced rebuild to pick up base-image security patches.
+    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 env:
@@ -12,7 +16,7 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch release version
@@ -22,6 +26,10 @@ jobs:
       - name: Check for modified files
         id: git-check
         run: echo "modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")" >> "$GITHUB_OUTPUT"
+      # Build on a new release, on the weekly forced-rebuild cron, or when triggered by hand.
+      - name: Decide whether to build
+        id: build-check
+        run: echo "build=$([ '${{ steps.git-check.outputs.modified }}' = 'true' -o '${{ github.event_name }}' = 'workflow_dispatch' -o '${{ github.event.schedule }}' = '0 4 * * 1' ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
       - name: Read latest.txt file
         id: getversion
         run: echo "version=$(cat github.com/paperless-ngx/paperless-ngx/latest.txt | sed -e "s/^v//")" >> "$GITHUB_OUTPUT"
@@ -35,29 +43,25 @@ jobs:
 
       # Build if needed
       - name: Log in to the Container registry
-        if: steps.git-check.outputs.modified == 'true'
-        uses: docker/login-action@v3
+        if: steps.build-check.outputs.build == 'true'
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        if: steps.git-check.outputs.modified == 'true'
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
-        if: steps.git-check.outputs.modified == 'true'
-        uses: docker/setup-buildx-action@v3
+        if: steps.build-check.outputs.build == 'true'
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Downcase REPO for image push
-        if: steps.git-check.outputs.modified == 'true'
+        if: steps.build-check.outputs.build == 'true'
         run: |
           echo "REPO=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
 
       - name: Build and push
-        if: steps.git-check.outputs.modified == 'true'
-        uses: docker/build-push-action@v6
+        if: steps.build-check.outputs.build == 'true'
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: github.com/paperless-ngx/paperless-ngx
           push: true
@@ -68,7 +72,7 @@ jobs:
             IMAGE_TAG=${{ steps.getversion.outputs.version }}
 
       - name: Clean up old tagged container versions
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
         with:
           package-name: 'container-rebuilds/paperless-ngx'
           package-type: 'container'

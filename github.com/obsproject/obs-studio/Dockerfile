@@ -20,9 +20,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY github.com/obsproject/obs-studio/start-obs.sh /usr/local/bin/start-obs.sh
-COPY scripts/substitute-env.sh /usr/local/bin/substitute-env.sh
-RUN chmod +x /usr/local/bin/start-obs.sh /usr/local/bin/substitute-env.sh
+COPY --chmod=755 github.com/obsproject/obs-studio/start-obs.sh /usr/local/bin/start-obs.sh
 
 # Non-root: OBS writes its config to ~/.config/obs-studio, so give it a home
 RUN userdel --remove $(id -un 1000) 2>/dev/null; \

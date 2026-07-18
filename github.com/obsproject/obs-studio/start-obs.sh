@@ -4,9 +4,6 @@
 # and wait for its socket ourselves instead.
 set -e
 
-# Fill in PLACEHOLDER_* from env vars; aborts startup if one is unset.
-/usr/local/bin/substitute-env.sh /home/obs/.config/obs-studio
-
 # A killed container leaves OBS's crash sentinel behind; next boot then shows
 # the Safe Mode dialog and hangs headless. Clear it before launch.
 # (safe_mode = OBS <= 31, .sentinel/run_* = OBS 32+; --disable-shutdown-check
