@@ -10,6 +10,12 @@ set -e
 # was removed in 32 so clearing these is the only way.)
 rm -rf /home/obs/.config/obs-studio/safe_mode /home/obs/.config/obs-studio/.sentinel
 
+# Same story for CEF: a hard stop leaves Chromium's SingletonLock (a
+# hostname+pid symlink) in the browser profile; the recreated container has a
+# new hostname, so CEF sees "profile in use by another computer" and dies with
+# exit code 21. Clear it before launch.
+rm -f /home/obs/.config/obs-studio/plugin_config/obs-browser/Singleton*
+
 DISPLAY_NUM=99
 export DISPLAY=":${DISPLAY_NUM}"
 SCREEN="${OBS_SCREEN:-1920x1080x24}"
