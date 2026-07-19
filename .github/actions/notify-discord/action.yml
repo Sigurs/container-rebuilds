@@ -25,6 +25,6 @@ runs:
       run: |
         [ -n "$WEBHOOK_URL" ] || { echo "DISCORD_WEBHOOK secret not set; skipping"; exit 0; }
         NAME=${IMAGE##*/}
-        printf -v msg '**%s** image ready: `%s`\n```\ndocker pull %s:%s\ndocker pull %s@%s\n```' "$NAME" "$TAG" "$IMAGE" "$TAG" "$IMAGE" "$DIGEST"
+        printf -v msg '**%s** image ready: `%s`\n```\ndocker pull %s:%s\n```\n```\ndocker pull %s@%s\n```' "$NAME" "$TAG" "$IMAGE" "$TAG" "$IMAGE" "$DIGEST"
         jq -n --arg content "$msg" '{content: $content}' | \
           curl -sf -H 'Content-Type: application/json' -d @- "$WEBHOOK_URL"
