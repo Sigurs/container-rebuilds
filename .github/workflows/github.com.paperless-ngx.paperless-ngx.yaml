@@ -5,9 +5,18 @@ on:
     # Weekly forced rebuild to pick up base-image security patches.
     - cron: '0 4 * * 1'
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - github.com/paperless-ngx/paperless-ngx/**
 
 env:
   REGISTRY: ghcr.io
+
+# A push during the debounce sleep (or mid-build) cancels this run in favour of the new one.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   check-and-build:
@@ -16,6 +25,9 @@ jobs:
       contents: write
       packages: write
     steps:
+      - name: Debounce rapid pushes
+        if: github.event_name == 'push'
+        run: sleep 20
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -29,7 +41,7 @@ jobs:
       # Build on a new release, on the weekly forced-rebuild cron, or when triggered by hand.
       - name: Decide whether to build
         id: build-check
-        run: echo "build=$([ '${{ steps.git-check.outputs.modified }}' = 'true' -o '${{ github.event_name }}' = 'workflow_dispatch' -o '${{ github.event.schedule }}' = '0 4 * * 1' ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+        run: echo "build=$([ '${{ steps.git-check.outputs.modified }}' = 'true' -o '${{ github.event_name }}' = 'workflow_dispatch' -o '${{ github.event_name }}' = 'push' -o '${{ github.event.schedule }}' = '0 4 * * 1' ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
       - name: Read latest.txt file
         id: getversion
         run: echo "version=$(cat github.com/paperless-ngx/paperless-ngx/latest.txt | sed -e "s/^v//")" >> "$GITHUB_OUTPUT"
@@ -60,6 +72,7 @@ jobs:
           echo "REPO=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
 
       - name: Build and push
+        id: build
         if: steps.build-check.outputs.build == 'true'
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
@@ -70,6 +83,15 @@ jobs:
           target: final
           build-args: |
             IMAGE_TAG=${{ steps.getversion.outputs.version }}
+
+      - name: Notify Discord
+        if: github.event_name == 'push'
+        uses: ./.github/actions/notify-discord
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          image: ${{ env.REGISTRY }}/${{ env.REPO }}/paperless-ngx
+          tag: ${{ steps.getversion.outputs.version }}
+          digest: ${{ steps.build.outputs.digest }}
 
       - name: Clean up old tagged container versions
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5

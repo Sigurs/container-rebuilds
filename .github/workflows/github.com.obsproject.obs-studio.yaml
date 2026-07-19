@@ -9,9 +9,18 @@ on:
         description: 'Image tag to push (e.g. 30.2 or a date). Defaults to "latest".'
         required: false
         default: latest
+  push:
+    branches: [master]
+    paths:
+      - github.com/obsproject/obs-studio/**
 
 env:
   REGISTRY: ghcr.io
+
+# A push during the debounce sleep (or mid-build) cancels this run in favour of the new one.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 # Least privilege: only need to push the package. No commit-back, so no contents: write.
 permissions:
@@ -22,6 +31,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Debounce rapid pushes
+        if: github.event_name == 'push'
+        run: sleep 20
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Log in to the Container registry
@@ -38,6 +50,7 @@ jobs:
         run: echo "REPO=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
@@ -46,6 +59,15 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/obs-studio:${{ inputs.version || 'latest' }}
           platforms: linux/amd64
           target: final
+
+      - name: Notify Discord
+        if: github.event_name == 'push'
+        uses: ./.github/actions/notify-discord
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          image: ${{ env.REGISTRY }}/${{ env.REPO }}/obs-studio
+          tag: ${{ inputs.version || 'latest' }}
+          digest: ${{ steps.build.outputs.digest }}
 
       - name: Clean up old tagged container versions
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5

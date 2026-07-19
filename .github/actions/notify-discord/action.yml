@@ -1,0 +1,30 @@
+name: Notify Discord
+description: Post the freshly built image's tag, digest, and copy-pasteable pull commands to a Discord webhook.
+inputs:
+  webhook-url:
+    description: Discord webhook URL (pass secrets.DISCORD_WEBHOOK; composite actions cannot read secrets directly).
+    required: true
+  image:
+    description: Full image name without tag, e.g. ghcr.io/sigurs/container-rebuilds/keycloak
+    required: true
+  tag:
+    description: Image tag that was pushed
+    required: true
+  digest:
+    description: Image digest (sha256:...)
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook-url }}
+        IMAGE: ${{ inputs.image }}
+        TAG: ${{ inputs.tag }}
+        DIGEST: ${{ inputs.digest }}
+      run: |
+        [ -n "$WEBHOOK_URL" ] || { echo "DISCORD_WEBHOOK secret not set; skipping"; exit 0; }
+        NAME=${IMAGE##*/}
+        printf -v msg '**%s** image ready: `%s`\n```\ndocker pull %s:%s\ndocker pull %s@%s\n```' "$NAME" "$TAG" "$IMAGE" "$TAG" "$IMAGE" "$DIGEST"
+        jq -n --arg content "$msg" '{content: $content}' | \
+          curl -sf -H 'Content-Type: application/json' -d @- "$WEBHOOK_URL"

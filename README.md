@@ -11,6 +11,8 @@ The usual reason for containers to need rebuilding are:
 ## Pipeline
 Each container has its own workflow that checks upstream's latest release twice a day and builds when a new one appears. All workflows also do a weekly forced rebuild (Mondays) to pick up base-image security patches, and can be triggered manually (always builds). Images are pushed to `ghcr.io/sigurs/container-rebuilds/<name>` tagged with the upstream release version; only the 3 latest versions are kept.
 
+Pushing changes to a container's folder also builds it directly, debounced by 20s: a quick follow-up commit cancels the in-flight run and starts over. These push-triggered builds post the new tag, digest, and `docker pull` commands to Discord via the `DISCORD_WEBHOOK` repo secret (skipped silently if the secret is unset).
+
 ## Containers
 ### github.com/keycloak/keycloak
 Needs optimized build to run with readOnlyFilesystem.  
